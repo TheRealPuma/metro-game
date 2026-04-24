@@ -8,7 +8,7 @@ const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-// LOAD CONFIG
+// 📦 LOAD CONFIG
 fetch("./config.json")
   .then(r => r.json())
   .then(data => {
@@ -16,61 +16,59 @@ fetch("./config.json")
     loop();
   });
 
-// DRAW MAP STYLE
+// 🎨 DRAW GAME
 function draw() {
   ctx.clearRect(0,0,canvas.width,canvas.height);
-
   if(!config) return;
 
-  // LINES
-  ctx.strokeStyle = "#555";
+  // lines
+  ctx.strokeStyle = "#4aa3ff";
   ctx.lineWidth = 3;
   ctx.beginPath();
-  config.stations.forEach((s,i) => {
-    if(i === 0) ctx.moveTo(s.x,s.y);
+  config.stations.forEach((s,i)=>{
+    if(i===0) ctx.moveTo(s.x,s.y);
     else ctx.lineTo(s.x,s.y);
   });
   ctx.stroke();
 
-  // STATIONS
-  config.stations.forEach(s => {
-    ctx.fillStyle = "#fff";
+  // stations
+  config.stations.forEach(s=>{
+    ctx.fillStyle = "white";
     ctx.beginPath();
     ctx.arc(s.x,s.y,6,0,Math.PI*2);
     ctx.fill();
   });
 
-  // SIMPLE TRAINS
-  ctx.fillStyle = "yellow";
+  // trains
   for(let i=0;i<state.trains;i++){
     let t = (Date.now()/1000 + i) % config.stations.length;
-    let a = config.stations[Math.floor(t)];
+    let s = config.stations[Math.floor(t)];
+    ctx.fillStyle = "yellow";
     ctx.beginPath();
-    ctx.arc(a.x,a.y,4,0,Math.PI*2);
+    ctx.arc(s.x,s.y,4,0,Math.PI*2);
     ctx.fill();
   }
 
+  // UI TEXT
   document.getElementById("money").innerText = "Money: " + state.money;
   document.getElementById("trains").innerText = "Trains: " + state.trains;
 }
 
+// 🔁 LOOP
 function loop(){
   draw();
   requestAnimationFrame(loop);
 }
 
-// ADMIN
+// 🔐 ADMIN
 document.getElementById("adminBtn").onclick = () => {
-  if(admin){
-    toggle();
-    return;
-  }
+  if(admin) return toggle();
 
   let pw = prompt("Password?");
   if(pw === config.adminPassword){
     admin = true;
     toggle();
-  } else alert("Wrong");
+  }
 };
 
 function toggle(){
@@ -78,6 +76,6 @@ function toggle(){
   p.style.display = p.style.display === "block" ? "none" : "block";
 }
 
-// BUTTONS
+// 🎮 BUTTONS
 document.getElementById("moneyBtn").onclick = () => state.money += 100;
 document.getElementById("trainBtn").onclick = () => state.trains++;
