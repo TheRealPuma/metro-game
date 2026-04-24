@@ -1,79 +1,83 @@
 let config;
-let state;
-let adminUnlocked = false;
+let state = { money: 100, trains: 1 };
+let admin = false;
 
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
 
-// LOAD CONFIG JSON
-fetch('config.json')
-  .then(res => res.json())
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+// LOAD CONFIG
+fetch("./config.json")
+  .then(r => r.json())
   .then(data => {
     config = data;
-    state = {
-      money: config.startMoney,
-      trains: 1
-    };
-    gameLoop();
+    loop();
   });
 
-// DRAW
+// DRAW MAP STYLE
 function draw() {
-  ctx.clearRect(0,0,600,400);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
 
-  ctx.fillStyle = "black";
+  if(!config) return;
+
+  // LINES
+  ctx.strokeStyle = "#555";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  config.stations.forEach((s,i) => {
+    if(i === 0) ctx.moveTo(s.x,s.y);
+    else ctx.lineTo(s.x,s.y);
+  });
+  ctx.stroke();
+
+  // STATIONS
   config.stations.forEach(s => {
-    ctx.fillRect(s.x-5,s.y-5,10,10);
+    ctx.fillStyle = "#fff";
+    ctx.beginPath();
+    ctx.arc(s.x,s.y,6,0,Math.PI*2);
+    ctx.fill();
   });
 
-  ctx.fillStyle = "red";
+  // SIMPLE TRAINS
+  ctx.fillStyle = "yellow";
   for(let i=0;i<state.trains;i++){
-    let t = (Date.now()/1000 + i) % 1;
-    let x = 100 + t * 400;
-    let y = 200 - t * 100;
+    let t = (Date.now()/1000 + i) % config.stations.length;
+    let a = config.stations[Math.floor(t)];
     ctx.beginPath();
-    ctx.arc(x,y,5,0,Math.PI*2);
+    ctx.arc(a.x,a.y,4,0,Math.PI*2);
     ctx.fill();
   }
 
-  ctx.fillStyle = "black";
-  ctx.fillText("Money: " + state.money, 10, 20);
-  ctx.fillText("Trains: " + state.trains, 10, 40);
+  document.getElementById("money").innerText = "Money: " + state.money;
+  document.getElementById("trains").innerText = "Trains: " + state.trains;
 }
 
-function gameLoop(){
+function loop(){
   draw();
-  requestAnimationFrame(gameLoop);
+  requestAnimationFrame(loop);
 }
 
-// ADMIN LOGIC
-document.getElementById("adminBtn").addEventListener("click", () => {
-  if(adminUnlocked){
-    toggleAdmin();
+// ADMIN
+document.getElementById("adminBtn").onclick = () => {
+  if(admin){
+    toggle();
     return;
   }
 
-  const input = prompt("Enter Admin Password:");
-  if(input === config.adminPassword){
-    adminUnlocked = true;
-    alert("Access granted");
-    toggleAdmin();
-  } else {
-    alert("Wrong password");
-  }
-});
+  let pw = prompt("Password?");
+  if(pw === config.adminPassword){
+    admin = true;
+    toggle();
+  } else alert("Wrong");
+};
 
-function toggleAdmin(){
-  const panel = document.getElementById('admin');
-  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+function toggle(){
+  let p = document.getElementById("panel");
+  p.style.display = p.style.display === "block" ? "none" : "block";
 }
 
-// BUTTON EVENTS
-
-document.getElementById("moneyBtn").addEventListener("click", () => {
-  state.money += 100;
-});
-
-document.getElementById("trainBtn").addEventListener("click", () => {
-  state.trains += 1;
-});
+// BUTTONS
+document.getElementById("moneyBtn").onclick = () => state.money += 100;
+document.getElementById("trainBtn").onclick = () => state.trains++;
