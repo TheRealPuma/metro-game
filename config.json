@@ -1,0 +1,10 @@
+{
+  "startMoney": 100,
+  "trainCost": 50,
+  "adminPassword": "1234",
+  "stations": [
+    {"x":100,"y":200},
+    {"x":300,"y":200},
+    {"x":500,"y":100}
+  ]
+}
